@@ -1,0 +1,17 @@
+{
+  "description": "要追踪的社媒账号配置示例",
+  "accounts": [
+    {
+      "platform": "instagram",
+      "username": "example_ig_account",
+      "display_name": "示例 IG 账号",
+      "notes": "主账号"
+    },
+    {
+      "platform": "tiktok",
+      "username": "example_tt_account",
+      "display_name": "示例 TikTok 账号",
+      "notes": "主账号"
+    }
+  ]
+}

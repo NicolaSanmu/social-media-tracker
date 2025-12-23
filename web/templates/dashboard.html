@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘 - Social Media Tracker{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- 页面标题 -->
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">数据仪表盘</h1>
+        <span class="text-sm text-gray-500">
+            最后更新: {{ last_collected or '暂无数据' }}
+        </span>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- 总账号数 -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">总账号数</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ total_accounts }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 平台统计卡片 -->
+        {% for platform, stats in platform_stats.items() %}
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full {% if platform == 'instagram' %}bg-pink-100 text-pink-600{% elif platform == 'tiktok' %}bg-gray-100 text-gray-800{% else %}bg-red-100 text-red-600{% endif %}">
+                    <span class="text-lg font-bold">{{ platform[:2].upper() }}</span>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-gray-500">{{ platform.title() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ "{:,}".format(stats.followers) }}</p>
+                    <p class="text-xs text-gray-400">{{ stats.count }} 账号 / {{ stats.posts }} 帖子</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 账号列表 -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">追踪中的账号</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">平台</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账号</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">粉丝数</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">帖子数</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for account in accounts %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-medium text-white rounded {% if account.platform == 'instagram' %}platform-instagram{% elif account.platform == 'tiktok' %}platform-tiktok{% elif account.platform == 'youtube' %}platform-youtube{% elif account.platform == 'twitter' %}platform-twitter{% else %}bg-gray-500{% endif %}">
+                                {{ account.platform.upper() }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{ account.display_name }}</div>
+                                    <div class="text-sm text-gray-500">@{{ account.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ "{:,}".format(account.follower_count or 0) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ "{:,}".format(account.post_count or 0) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <a href="/account/{{ account.id }}" class="text-blue-600 hover:text-blue-900">查看详情</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 热门帖子 -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-900">热门帖子 Top 10</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            {% for post in top_posts %}
+            <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-1 text-xs font-medium text-white rounded {% if post.platform == 'instagram' %}platform-instagram{% elif post.platform == 'tiktok' %}platform-tiktok{% elif post.platform == 'youtube' %}platform-youtube{% elif post.platform == 'twitter' %}platform-twitter{% else %}bg-gray-500{% endif %}">
+                            {{ post.platform[:2].upper() }}
+                        </span>
+                        <span class="text-sm font-medium text-gray-900">@{{ post.username }}</span>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-600 truncate">{{ post.caption or '无描述' }}</p>
+                </div>
+                <div class="ml-4 flex items-center space-x-6 text-sm text-gray-500">
+                    <div class="text-center">
+                        <div class="font-semibold text-gray-900">{{ "{:,}".format(post.views) }}</div>
+                        <div class="text-xs">播放</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-semibold text-gray-900">{{ "{:,}".format(post.likes) }}</div>
+                        <div class="text-xs">点赞</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-semibold text-gray-900">{{ "{:,}".format(post.comments) }}</div>
+                        <div class="text-xs">评论</div>
+                    </div>
+                    <a href="{{ post.url }}" target="_blank" class="text-blue-600 hover:text-blue-900">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

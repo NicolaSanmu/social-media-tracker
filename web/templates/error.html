@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}错误 - Social Media Tracker{% endblock %}
+
+{% block content %}
+<div class="min-h-96 flex items-center justify-center">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold text-gray-900 mb-4">出错了</h1>
+        <p class="text-gray-600 mb-6">{{ message or '页面未找到' }}</p>
+        <a href="/" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            返回首页
+        </a>
+    </div>
+</div>
+{% endblock %}
