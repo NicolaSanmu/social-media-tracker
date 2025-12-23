@@ -116,12 +116,23 @@ async def health_check():
         "twitter": bool(os.environ.get('TWITTER_API_KEY'))
     }
 
+    # Debug: 检查 Supabase 环境变量
+    supabase_url = os.environ.get('SUPABASE_URL', '')
+    supabase_key = os.environ.get('SUPABASE_SERVICE_KEY', '')
+    supabase_debug = {
+        "url_set": bool(supabase_url),
+        "url_preview": supabase_url[:30] + "..." if len(supabase_url) > 30 else supabase_url,
+        "key_set": bool(supabase_key),
+        "key_length": len(supabase_key)
+    }
+
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "database": db_status,
         "account_count": account_count,
-        "api_keys_configured": api_keys
+        "api_keys_configured": api_keys,
+        "supabase_debug": supabase_debug
     }
 
 
