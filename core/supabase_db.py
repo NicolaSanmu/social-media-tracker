@@ -12,9 +12,12 @@ from dataclasses import dataclass, asdict
 
 from supabase import create_client, Client
 
-# Supabase configuration
-SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
-SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_KEY', '')  # Use service_role key for write access
+# Supabase configuration - read at runtime, not import time
+def get_supabase_url():
+    return os.environ.get('SUPABASE_URL', '')
+
+def get_supabase_key():
+    return os.environ.get('SUPABASE_SERVICE_KEY', '')
 
 
 @dataclass
@@ -82,12 +85,14 @@ class SupabaseDatabase:
     """Supabase database operations - same interface as SQLite Database class"""
 
     def __init__(self):
-        if not SUPABASE_URL or not SUPABASE_KEY:
+        url = get_supabase_url()
+        key = get_supabase_key()
+        if not url or not key:
             raise ValueError(
                 "Supabase credentials not configured. "
                 "Set SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables."
             )
-        self.client: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        self.client: Client = create_client(url, key)
 
     # ===== Account Operations =====
 
