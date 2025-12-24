@@ -23,6 +23,7 @@ from core.collectors import (
     TwitterCollector
 )
 from core.supabase_db import get_db
+from core.api_config import get_all_configs, clear_cache
 
 app = FastAPI(
     title="Social Media Tracker API",
@@ -133,6 +134,58 @@ async def health_check():
         "account_count": account_count,
         "api_keys_configured": api_keys,
         "supabase_debug": supabase_debug
+    }
+
+
+# ===== API Configuration =====
+
+@app.get("/api/configs")
+async def get_api_configs():
+    """Get all API configurations (keys are masked for security)"""
+    configs = get_all_configs()
+
+    # Mask API keys for security (show first 8 and last 4 chars)
+    masked_configs = {}
+    for platform, config in configs.items():
+        if config:
+            api_key = config.get('api_key', '')
+            if len(api_key) > 12:
+                masked_key = api_key[:8] + '...' + api_key[-4:]
+            else:
+                masked_key = '***' if api_key else ''
+
+            masked_configs[platform] = {
+                'platform': platform,
+                'api_key_masked': masked_key,
+                'api_host': config.get('api_host'),
+                'enabled': config.get('enabled', False),
+                'notes': config.get('notes', ''),
+                'source': config.get('source', 'unknown')
+            }
+        else:
+            masked_configs[platform] = {
+                'platform': platform,
+                'api_key_masked': '',
+                'api_host': None,
+                'enabled': False,
+                'notes': 'Not configured',
+                'source': 'none'
+            }
+
+    return {
+        "configs": masked_configs,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.post("/api/configs/refresh")
+async def refresh_api_configs(platform: Optional[str] = None):
+    """Clear API config cache to reload from database"""
+    clear_cache(platform)
+    return {
+        "success": True,
+        "message": f"Cache cleared for {'all platforms' if not platform else platform}",
+        "timestamp": datetime.now().isoformat()
     }
 
 

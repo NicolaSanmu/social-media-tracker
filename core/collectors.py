@@ -14,8 +14,10 @@ from datetime import datetime
 from typing import List, Dict, Optional
 from dataclasses import dataclass
 
+# Import API config module for database-driven API keys
+from .api_config import get_api_key, get_api_host, is_platform_enabled
+
 # Use Supabase if configured, otherwise fall back to SQLite
-import os
 if os.environ.get('SUPABASE_URL') and os.environ.get('SUPABASE_SERVICE_KEY'):
     from .supabase_db import get_db, Account, Post, PostMetrics, AccountMetrics
     db = get_db()
@@ -198,9 +200,9 @@ class InstagramCollector(BaseCollector):
     def __init__(self):
         super().__init__()
         self.platform = "instagram"
-        # API 配置
-        self.api_key = os.environ.get('INSTAGRAM_API_KEY', '')
-        self.rapidapi_host = "instagram120.p.rapidapi.com"
+        # API 配置 - from database or env vars
+        self.api_key = get_api_key('instagram')
+        self.rapidapi_host = get_api_host('instagram') or "instagram120.p.rapidapi.com"
         self.base_url = f"https://{self.rapidapi_host}/api/instagram"
 
     def _get_headers(self) -> Dict:
@@ -356,9 +358,9 @@ class TikTokCollector(BaseCollector):
     def __init__(self):
         super().__init__()
         self.platform = "tiktok"
-        # API 配置
-        self.api_key = os.environ.get('TIKTOK_API_KEY', '')
-        self.rapidapi_host = "tiktok-api23.p.rapidapi.com"
+        # API 配置 - from database or env vars
+        self.api_key = get_api_key('tiktok')
+        self.rapidapi_host = get_api_host('tiktok') or "tiktok-api23.p.rapidapi.com"
         self.base_url = f"https://{self.rapidapi_host}/api"
         # 缓存 secUid
         self._sec_uid_cache = {}
@@ -535,9 +537,9 @@ class TwitterCollector(BaseCollector):
     def __init__(self):
         super().__init__()
         self.platform = "twitter"
-        # API 配置
-        self.api_key = os.environ.get('TWITTER_API_KEY', '')
-        self.rapidapi_host = "twitter-api45.p.rapidapi.com"
+        # API 配置 - from database or env vars
+        self.api_key = get_api_key('twitter')
+        self.rapidapi_host = get_api_host('twitter') or "twitter-api45.p.rapidapi.com"
         self.base_url = f"https://{self.rapidapi_host}"
 
     def _get_headers(self) -> Dict:
@@ -692,8 +694,8 @@ class YouTubeCollector(BaseCollector):
     def __init__(self):
         super().__init__()
         self.platform = "youtube"
-        # API 配置
-        self.api_key = os.environ.get('YOUTUBE_API_KEY', '')
+        # API 配置 - from database or env vars
+        self.api_key = get_api_key('youtube')
         self.base_url = "https://www.googleapis.com/youtube/v3"
 
     def _get_channel_id(self, username: str) -> Optional[str]:
